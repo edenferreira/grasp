@@ -1,0 +1,6 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.10.1"}}
+ :aliases
+ {:test
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "0.0-554"}
+                nubank/matcher-combinators {:mvn/version "1.2.4"}}}}}
