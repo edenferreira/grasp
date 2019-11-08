@@ -61,7 +61,7 @@
         three 3
         four 4]
     (t/testing "the return is unmodified, but we grab
-              the information of the call"
+                the information of the call"
       (t/is (= {:multiplication 24
                 :subtraction -5
                 :sum 9}
@@ -116,3 +116,28 @@
                      :execution-id execution-id)
     (t/is (match? [{:grab-id m/absent}]
                   @log))))
+
+(t/deftest grab-value
+  (let [log (atom [])
+        execution-id (atom :some-execution-id)
+        something {:some :thing}]
+    (t/testing "we grab the information of the value
+                but return it unmodified"
+      (t/is (= something
+               (grasp/grab-value :some-grab-id
+                                something
+                                :log log
+                                :execution-id execution-id)))
+      (t/is (match? [{:value something
+                      :form 'something
+                      :grab-id :some-grab-id
+                      :execution-id :some-execution-id}]
+                    @log)))
+    (let [log (atom [])
+          execution-id (atom :some-execution-id)]
+      (grasp/grab-value nil
+                        something
+                        :log log
+                        :execution-id execution-id)
+      (t/is (match? [{:grab-id m/absent}]
+                    @log)))))

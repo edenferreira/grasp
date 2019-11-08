@@ -58,3 +58,25 @@
    (emit-grab-call grab-id form log current-execution-id))
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab-call grab-id form log execution-id)))
+
+(defn emit-grab-value [grab-id
+                       form
+                       log
+                       execution-id]
+  `(let [value# ~form
+         grab-id# ~grab-id
+         result# (grab-a-value value#)]
+     (swap! ~log conj
+            (merge (cond-> {:form (quote ~form)
+                            :execution-id (deref ~execution-id)}
+                     grab-id# (assoc :grab-id grab-id#))
+                   result#))
+     (:value result#)))
+
+(defmacro grab-value
+  ([form]
+   (emit-grab-value nil form log current-execution-id))
+  ([grab-id form]
+   (emit-grab-value grab-id form log current-execution-id))
+  ([grab-id form & {:keys [log execution-id]}]
+   (emit-grab-value grab-id form log execution-id)))
