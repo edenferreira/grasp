@@ -23,7 +23,13 @@
                      (catch Throwable t
                        {:exception t
                         :exception-as-map (Throwable->map t)}))]
-        (merge {:args args
+        (merge f-meta
+               {:args args
                 :var f-var}
-               f-meta
                result)))))
+
+(defn grab-a-value [value]
+  (let [value-var (search-for-var value)]
+    (merge (meta value-var)
+           {:value value
+            :var value-var})))
