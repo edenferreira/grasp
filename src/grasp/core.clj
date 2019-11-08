@@ -59,10 +59,7 @@
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab-call grab-id form log execution-id)))
 
-(defn emit-grab-value [grab-id
-                       form
-                       log
-                       execution-id]
+(defn emit-grab-value [grab-id form log execution-id]
   `(let [value# ~form
          grab-id# ~grab-id
          result# (grab-a-value value#)]
@@ -80,3 +77,16 @@
    (emit-grab-value grab-id form log current-execution-id))
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab-value grab-id form log execution-id)))
+
+(defn emit-grab [grab-id form log execution-id]
+  (if (list? form)
+    (emit-grab-call grab-id form log execution-id)
+    (emit-grab-value grab-id form log execution-id)))
+
+(defmacro grab
+  ([form]
+   (emit-grab nil form log current-execution-id))
+  ([grab-id form]
+   (emit-grab grab-id form log current-execution-id))
+  ([grab-id form & {:keys [log execution-id]}]
+   (emit-grab grab-id form log execution-id)))
