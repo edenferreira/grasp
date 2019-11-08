@@ -66,9 +66,9 @@
    Grab-id and execution-id and not that special, are just to help
    filter the log to find what you want when the log gets chaotic."
   ([form]
-   (emit-grab-call nil form log current-execution-id))
+   (emit-grab-call nil form `log `current-execution-id))
   ([grab-id form]
-   (emit-grab-call grab-id form log current-execution-id))
+   (emit-grab-call grab-id form `log `current-execution-id))
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab-call grab-id form log execution-id)))
 
@@ -95,9 +95,9 @@
    Grab-id and execution-id and not that special, are just to help
    filter the log to find what you want when the log gets chaotic."
   ([form]
-   (emit-grab-value nil form log current-execution-id))
+   (emit-grab-value nil form `log `current-execution-id))
   ([grab-id form]
-   (emit-grab-value grab-id form log current-execution-id))
+   (emit-grab-value grab-id form `log `current-execution-id))
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab-value grab-id form log execution-id)))
 
@@ -110,38 +110,38 @@
   "It chooses if should grab as a call or a value,
    to see what each does see grab-call and grab-value docs"
   ([form]
-   (emit-grab nil form log current-execution-id))
+   (emit-grab nil form `log `current-execution-id))
   ([grab-id form]
-   (emit-grab grab-id form log current-execution-id))
+   (emit-grab grab-id form `log `current-execution-id))
   ([grab-id form & {:keys [log execution-id]}]
    (emit-grab grab-id form log execution-id)))
 
 (defmacro ->grab-call
   "see grab-call docs"
   [form grab-id]
-  (emit-grab-call grab-id form log current-execution-id))
+  (emit-grab-call grab-id form `log `current-execution-id))
 
 (defmacro ->>grab-call
   "see grab-call docs"
   [grab-id form]
-  (emit-grab-call grab-id form log current-execution-id))
+  (emit-grab-call grab-id form `log `current-execution-id))
 
 (defmacro ->grab-value
   "see grab-value docs"
   [form grab-id]
-  (emit-grab-value grab-id form log current-execution-id))
+  (emit-grab-value grab-id form `log `current-execution-id))
 
 (defmacro ->>grab-value
   "see grab-value docs"
   [grab-id form]
-  (emit-grab-value grab-id form log current-execution-id))
+  (emit-grab-value grab-id form `log `current-execution-id))
 
 (defmacro ->grab
   "see grab docs"
   [form grab-id]
-  (emit-grab grab-id form log current-execution-id))
+  (emit-grab grab-id form `log `current-execution-id))
 
 (defmacro ->>grab
   "see grab docs"
   [grab-id form]
-  (emit-grab grab-id form log current-execution-id))
+  (emit-grab grab-id form `log `current-execution-id))
