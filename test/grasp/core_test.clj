@@ -171,33 +171,3 @@
                       :grab-id :other-grab-id
                       :execution-id :some-execution-id}]
                     @log)))))
-
-(t/deftest grab->
-  (let [log (atom [])
-        execution-id (atom :some-execution-id)
-        something {:some :thing}]
-    (t/testing "we know try to guess if we should grab the value
-                or the call, we don't try that hard"
-      (t/is (= something
-               (grasp/grab :some-grab-id
-                           something
-                           :log log
-                           :execution-id execution-id)))
-      (t/is (= {:sum 18
-                :subtraction -8
-                :multiplication 210}
-               (grasp/grab :other-grab-id
-                           (grabbable 5 6 7)
-                           :log log
-                           :execution-id execution-id)))
-      (t/is (match? [{:value something
-                      :form 'something
-                      :grab-id :some-grab-id
-                      :execution-id :some-execution-id}
-                     {:return {:sum 18
-                               :subtraction -8
-                               :multiplication 210}
-                      :form '(grabbable 5 6 7)
-                      :grab-id :other-grab-id
-                      :execution-id :some-execution-id}]
-                    @log)))))
