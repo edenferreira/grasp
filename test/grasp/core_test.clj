@@ -160,6 +160,11 @@
                            (grabbable 5 6 7)
                            :log log
                            :execution-id execution-id)))
+      (t/is (= :b
+               (grasp/grab :another-grab-id
+                           (:a {:a :b})
+                           :log log
+                           :execution-id execution-id)))
       (t/is (match? [{:value something
                       :form 'something
                       :grab-id :some-grab-id
@@ -169,5 +174,9 @@
                                :multiplication 210}
                       :form '(grabbable 5 6 7)
                       :grab-id :other-grab-id
+                      :execution-id :some-execution-id}
+                     {:value :b
+                      :form '(:a {:a :b})
+                      :grab-id :another-grab-id
                       :execution-id :some-execution-id}]
                     @log)))))

@@ -47,6 +47,10 @@
                             :execution-id (deref ~execution-id)}
                      grab-id# (assoc :grab-id grab-id#))
                    result#))
+     (println (str (apply str (Character/toChars 128401))
+                   (apply str (Character/toChars 128070))
+                   (apply str (Character/toChars 128073)))
+              "Call grabbed from form" (pr-str (quote ~form)))
      (if (contains? result# :return)
        (:return result#)
        (throw (:exception result#)))))
@@ -81,6 +85,10 @@
                             :execution-id (deref ~execution-id)}
                      grab-id# (assoc :grab-id grab-id#))
                    result#))
+     (println (str (apply str (Character/toChars 128401))
+                   (apply str (Character/toChars 128070))
+                   (apply str (Character/toChars 128073)))
+              "Value grabbed from form" (pr-str (quote ~form)))
      (:value result#)))
 
 (defmacro grab-value
@@ -102,7 +110,9 @@
    (emit-grab-value grab-id form log execution-id)))
 
 (defn emit-grab [grab-id form log execution-id]
-  (if (list? form)
+  (if (and (list? form)
+           (-> form first symbol?)
+           (-> form first resolve var-get fn?))
     (emit-grab-call grab-id form log execution-id)
     (emit-grab-value grab-id form log execution-id)))
 
