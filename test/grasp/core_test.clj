@@ -1,6 +1,7 @@
 (ns grasp.core-test
   (:require [clojure.test :as t]
             [grasp.core :as grasp]
+            [clojure.string :as string]
             [matcher-combinators.test :refer [match? thrown-match?]]
             [matcher-combinators.matchers :as m])
   (:import (clojure.lang ExceptionInfo)))
@@ -23,7 +24,7 @@
                     :multiplication 6}
                    :args [1 2 3]
                    :file (m/regex #"grasp/core_test.clj$")
-                   :line 8
+                   :line 9
                    :name 'grabbable
                    :var #'grabbable}
                   (grabbed 1 2 3)))
@@ -43,7 +44,7 @@
     (t/is (match? {:value {:a :b :c :d}
                    :var #'grabbable-value
                    :file (m/regex #"grasp/core_test.clj$")
-                   :line 38
+                   :line 39
                    :name 'grabbable-value}
                   (grasp/grab-a-value grabbable-value)))
     (t/is (= (the-ns 'grasp.core-test)
@@ -51,7 +52,7 @@
   (t/testing "we are able to get the right var"
     (t/is (match? {:value {:a :b :c :d}
                    :var #'other-grabbable-value
-                   :line 39}
+                   :line 40}
                   (grasp/grab-a-value other-grabbable-value)))))
 
 (t/deftest grab-call
@@ -207,4 +208,19 @@
                       :form '(:a {:a :b})
                       :grab-id :another-grab-id
                       :execution-id :some-execution-id}]
-                    @log)))))
+                    @log)))
+    (let [log (atom [])]
+      (t/testing "We print the grabbed data structure
+                and add a simple way to get it, so
+                we can still debug at a glance if that
+                solves what we want (in a lot of cases
+                it does) but we can easily get the data
+                if we want to be more thorough"
+        (t/is (= ["=> (grabbable 5 6 7) grabbed"
+                  "   get with (nth grasp.core/log 0) :"
+                  "{:sum 18, :subtraction -8, :multiplication 210}"]
+                 (string/split-lines (with-out-str
+                                       (grasp/grab :other-grab-id
+                                                   (grabbable 5 6 7)
+                                                   :log log
+                                                   :execution-id execution-id)))))))))

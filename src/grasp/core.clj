@@ -1,5 +1,5 @@
 (ns grasp.core
-  (:require [clojure.repl :as repl]))
+  (:require [clojure.pprint :as pprint]))
 
 (defonce log (atom []))
 (defonce current-execution-id (atom :initial-execution-context))
@@ -43,22 +43,28 @@
                       [f & args :as form]
                       log
                       execution-id]
-  `(let [f# ~f
-         grabbed# (grabbed-fn f#)
-         result# (grabbed# ~@args)
-         grab-id# ~grab-id]
-     (swap! ~log conj
-            (merge (cond-> {:form (quote ~form)
-                            :execution-id (deref ~execution-id)}
-                     grab-id# (assoc :grab-id grab-id#))
-                   result#))
-     (println (str (apply str (Character/toChars 128401))
-                   (apply str (Character/toChars 128070))
-                   (apply str (Character/toChars 128073)))
-              "Call grabbed from form" (pr-str (quote ~form)))
-     (if (contains? result# :return)
-       (:return result#)
-       (throw (:exception result#)))))
+  (let [s 'nth]
+    `(let [f# ~f
+           grabbed# (grabbed-fn f#)
+           result# (grabbed# ~@args)
+           grab-id# ~grab-id
+           log# (swap! ~log conj
+                       (merge (cond-> {:form (quote ~form)
+                                       :execution-id (deref ~execution-id)}
+                                grab-id# (assoc :grab-id grab-id#))
+                              result#))]
+       (println "=>" (pr-str (quote ~form))
+                "grabbed\n  "
+                "get with"
+                (pr-str (list (quote ~s)
+                              (quote log)
+                              (dec (count log#))))
+                ":")
+       (if (contains? result# :return)
+         (do (pprint/pprint (:return result#))
+             (:return result#))
+         (do (pprint/pprint (:exception-as-map result#))
+             (throw (:exception result#)))))))
 
 (defmacro grab-call
   "Grabs the call and add its execution to the log.
@@ -82,24 +88,30 @@
    (emit-grab-call grab-id form log execution-id)))
 
 (defn emit-grab-value [grab-id form log execution-id]
-  `(let [grab-id# ~grab-id
-         result# (try
-                   (grab-a-value ~form)
-                   (catch Throwable t#
-                     {:exception t#
-                      :exception-as-map (Throwable->map t#)}))]
-     (swap! ~log conj
-            (merge (cond-> {:form (quote ~form)
-                            :execution-id (deref ~execution-id)}
-                     grab-id# (assoc :grab-id grab-id#))
-                   result#))
-     (println (str (apply str (Character/toChars 128401))
-                   (apply str (Character/toChars 128070))
-                   (apply str (Character/toChars 128073)))
-              "Value grabbed from form" (pr-str (quote ~form)))
-     (if (contains? result# :value)
-       (:value result#)
-       (throw (:exception result#)))))
+  (let [s 'nth]
+    `(let [grab-id# ~grab-id
+           result# (try
+                     (grab-a-value ~form)
+                     (catch Throwable t#
+                       {:exception t#
+                        :exception-as-map (Throwable->map t#)}))
+           log# (swap! ~log conj
+                       (merge (cond-> {:form (quote ~form)
+                                       :execution-id (deref ~execution-id)}
+                                grab-id# (assoc :grab-id grab-id#))
+                              result#))]
+       (println "=>" (pr-str (quote ~form))
+                "grabbed\n  "
+                "get with"
+                (pr-str (list (quote ~s)
+                              (quote log)
+                              (dec (count log#))))
+                ":")
+       (if (contains? result# :value)
+         (do (pprint/pprint (:value result#))
+             (:value result#))
+         (do (pprint/pprint (:exception-as-map result#))
+             (throw (:exception result#)))))))
 
 (defmacro grab-value
   "Grabs the value and add it to the log.
