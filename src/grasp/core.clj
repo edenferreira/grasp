@@ -3,6 +3,11 @@
 
 (defonce log (atom []))
 (defonce current-execution-id (atom :initial-execution-context))
+(defn restart-log!
+  ([]
+   (restart-log! log))
+  ([log]
+   (reset! log [])))
 
 (defn search-for-var [p]
   (if (var? p)
