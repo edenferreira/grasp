@@ -133,6 +133,34 @@
                       :grab-id :some-grab-id
                       :execution-id :some-execution-id}]
                     @log)))
+    (let [log (atom [])]
+      (t/testing "we grab the information of the expression
+                as value and return it unmodified"
+        (t/is (= :b
+                 (grasp/grab-value :some-grab-id
+                                   (:a {:a :b})
+                                   :log log
+                                   :execution-id execution-id)))
+        (t/is (match? [{:value :b
+                        :form '(:a {:a :b})
+                        :grab-id :some-grab-id
+                        :execution-id :some-execution-id}]
+                      @log))))
+    (let [log (atom [])]
+      (t/testing "we grab the exception of the expression
+                  as value and throw it unmodified"
+        (t/is (thrown-match?
+                ExceptionInfo
+                {:oh :no}
+                (grasp/grab-value :some-grab-id
+                                  (throw exception)
+                                  :log log
+                                  :execution-id execution-id)))
+        (t/is (match? [{:exception (partial identical? exception)
+                        :form '(throw exception)
+                        :grab-id :some-grab-id
+                        :execution-id :some-execution-id}]
+                      @log))))
     (let [log (atom [])
           execution-id (atom :some-execution-id)]
       (grasp/grab-value nil

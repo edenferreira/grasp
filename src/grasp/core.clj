@@ -77,9 +77,12 @@
    (emit-grab-call grab-id form log execution-id)))
 
 (defn emit-grab-value [grab-id form log execution-id]
-  `(let [value# ~form
-         grab-id# ~grab-id
-         result# (grab-a-value value#)]
+  `(let [grab-id# ~grab-id
+         result# (try
+                   (grab-a-value ~form)
+                   (catch Throwable t#
+                     {:exception t#
+                      :exception-as-map (Throwable->map t#)}))]
      (swap! ~log conj
             (merge (cond-> {:form (quote ~form)
                             :execution-id (deref ~execution-id)}
@@ -89,7 +92,9 @@
                    (apply str (Character/toChars 128070))
                    (apply str (Character/toChars 128073)))
               "Value grabbed from form" (pr-str (quote ~form)))
-     (:value result#)))
+     (if (contains? result# :value)
+       (:value result#)
+       (throw (:exception result#)))))
 
 (defmacro grab-value
   "Grabs the value and add it to the log.
