@@ -116,7 +116,23 @@
                      :log log
                      :execution-id execution-id)
     (t/is (match? [{:grab-id m/absent}]
-                  @log))))
+                  @log)))
+  (let [log (atom [])
+        execution-id (atom :some-execution-id)]
+    (t/testing "We print the grabbed data structure
+                and add a simple way to get it, so
+                we can still debug at a glance if that
+                solves what we want (in a lot of cases
+                it does) but we can easily get the data
+                if we want to be more thorough"
+      (t/is (= ["=> (grabbable 5 6 7) grabbed"
+                "   get with (nth grasp.core/log 0) :"
+                "{:sum 18, :subtraction -8, :multiplication 210}"]
+               (string/split-lines (with-out-str
+                                     (grasp/grab-call :other-grab-id
+                                                      (grabbable 5 6 7)
+                                                      :log log
+                                                      :execution-id execution-id))))))))
 
 (t/deftest grab-value
   (let [log (atom [])
@@ -169,7 +185,22 @@
                         :log log
                         :execution-id execution-id)
       (t/is (match? [{:grab-id m/absent}]
-                    @log)))))
+                    @log)))
+    (let [log (atom [])]
+      (t/testing "We print the grabbed data structure
+                  and add a simple way to get it, so
+                  we can still debug at a glance if that
+                  solves what we want (in a lot of cases
+                  it does) but we can easily get the data
+                  if we want to be more thorough"
+        (t/is (= ["=> (grabbable 5 6 7) grabbed"
+                  "   get with (nth grasp.core/log 0) :"
+                  "{:sum 18, :subtraction -8, :multiplication 210}"]
+                 (string/split-lines (with-out-str
+                                       (grasp/grab-value :other-grab-id
+                                                         (grabbable 5 6 7)
+                                                         :log log
+                                                         :execution-id execution-id)))))))))
 
 (t/deftest grab
   (let [log (atom [])
@@ -208,19 +239,4 @@
                       :form '(:a {:a :b})
                       :grab-id :another-grab-id
                       :execution-id :some-execution-id}]
-                    @log)))
-    (let [log (atom [])]
-      (t/testing "We print the grabbed data structure
-                and add a simple way to get it, so
-                we can still debug at a glance if that
-                solves what we want (in a lot of cases
-                it does) but we can easily get the data
-                if we want to be more thorough"
-        (t/is (= ["=> (grabbable 5 6 7) grabbed"
-                  "   get with (nth grasp.core/log 0) :"
-                  "{:sum 18, :subtraction -8, :multiplication 210}"]
-                 (string/split-lines (with-out-str
-                                       (grasp/grab :other-grab-id
-                                                   (grabbable 5 6 7)
-                                                   :log log
-                                                   :execution-id execution-id)))))))))
+                    @log)))))
