@@ -125,8 +125,7 @@
                 solves what we want (in a lot of cases
                 it does) but we can easily get the data
                 if we want to be more thorough"
-      (t/is (= ["=> (grabbable 5 6 7) grabbed"
-                "   get with (nth grasp.core/log 0) :"
+      (t/is (= ["=> (grabbable 5 6 7) grabbed see at (nth @log 0) :"
                 "{:sum 18, :subtraction -8, :multiplication 210}"]
                (string/split-lines (with-out-str
                                      (grasp/grab-call :other-grab-id
@@ -193,8 +192,7 @@
                   solves what we want (in a lot of cases
                   it does) but we can easily get the data
                   if we want to be more thorough"
-        (t/is (= ["=> (grabbable 5 6 7) grabbed"
-                  "   get with (nth grasp.core/log 0) :"
+        (t/is (= ["=> (grabbable 5 6 7) grabbed see at (nth @grasp.core/log 0) :"
                   "{:sum 18, :subtraction -8, :multiplication 210}"]
                  (string/split-lines (with-out-str
                                        (grasp/grab-value :other-grab-id

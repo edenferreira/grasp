@@ -54,10 +54,11 @@
                                 grab-id# (assoc :grab-id grab-id#))
                               result#))]
        (println "=>" (pr-str (quote ~form))
-                "grabbed\n  "
-                "get with"
+                "grabbed see at"
                 (pr-str (list (quote ~s)
-                              (quote log)
+                              (->> (quote ~log)
+                                   (str "@")
+                                   symbol)
                               (dec (count log#))))
                 ":")
        (if (contains? result# :return)
@@ -101,10 +102,11 @@
                                 grab-id# (assoc :grab-id grab-id#))
                               result#))]
        (println "=>" (pr-str (quote ~form))
-                "grabbed\n  "
-                "get with"
+                "grabbed see at"
                 (pr-str (list (quote ~s)
-                              (quote log)
+                              (->> (quote log)
+                                   (str "@")
+                                   symbol)
                               (dec (count log#))))
                 ":")
        (if (contains? result# :value)
