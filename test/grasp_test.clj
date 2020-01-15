@@ -21,3 +21,9 @@
     (is (= 5 (grasp/-> 1 inc inc inc inc)))
     (is (= [1 2 3 4 5]
            @grasp/*log*))))
+
+(deftest thread->>
+  (binding [grasp/*log* (atom [])]
+    (is (= 4 (grasp/->> 2 (- 3) (- 5))))
+    (is (= [2 1 4]
+           @grasp/*log*))))

@@ -1,5 +1,5 @@
 (ns grasp
-  (:refer-clojure :exclude [->]))
+  (:refer-clojure :exclude [-> ->>]))
 
 (defonce ^:dynamic *log* (atom []))
 (def ^:dynamic *execution-id* :execution-id)
@@ -8,12 +8,12 @@
 (defn search-for-var [p]
   (if (var? p)
     p
-    (->> (all-ns)
-         (mapcat ns-map)
-         (filter #(and (var? (second %))
-                       (identical? p (var-get (second %)))))
-         first
-         second)))
+    (clojure.core/->> (all-ns)
+                      (mapcat ns-map)
+                      (filter #(and (var? (second %))
+                                    (identical? p (var-get (second %)))))
+                      first
+                      second)))
 
 (defn tap [v]
   (tap> v)
@@ -28,3 +28,7 @@
 (defmacro -> [& forms]
   (let [forms' (interleave forms (repeat `tap))]
     `(clojure.core/-> ~@forms')))
+
+(defmacro ->> [& forms]
+  (let [forms' (interleave forms (repeat `tap))]
+    `(clojure.core/->> ~@forms')))
