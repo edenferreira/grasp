@@ -1,5 +1,5 @@
 (ns grasp-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.test :refer [deftest is testing]]
             [grasp]))
 
 (deftest tap
@@ -14,4 +14,14 @@
             grasp/*log* (atom (range 10))]
     (grasp/tap {:a :value})
     (is (= 10
-           (count @grasp/*log*)))))
+           (count @grasp/*log*))))
+
+  (testing "We send to both log and tap"
+    (let [tapped (atom [])
+          to-tap (fn [v] (swap! tapped conj v))]
+      (add-tap to-tap)
+      (grasp/tap {:some :value})
+
+      (is (= [{:some :value}] @tapped))
+
+      (remove-tap to-tap))))

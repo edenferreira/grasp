@@ -15,6 +15,7 @@
          second)))
 
 (defn tap [v]
+  (tap> v)
   (swap! *log*
          (fn [log]
            (let [log (conj (vec log) v)]
