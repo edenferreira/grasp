@@ -14,14 +14,10 @@
             grasp/*log* (atom (range 10))]
     (grasp/tap {:a :value})
     (is (= 10
-           (count @grasp/*log*))))
+           (count @grasp/*log*)))))
 
-  (testing "We send to both log and tap"
-    (let [tapped (atom [])
-          to-tap (fn [v] (swap! tapped conj v))]
-      (add-tap to-tap)
-      (grasp/tap {:some :value})
-
-      (is (= [{:some :value}] @tapped))
-
-      (remove-tap to-tap))))
+(deftest thread->
+  (binding [grasp/*log* (atom [])]
+    (is (= 5 (grasp/-> 1 inc inc inc inc)))
+    (is (= [1 2 3 4 5]
+           @grasp/*log*))))

@@ -1,4 +1,5 @@
-(ns grasp)
+(ns grasp
+  (:refer-clojure :exclude [->]))
 
 (defonce ^:dynamic *log* (atom []))
 (def ^:dynamic *execution-id* :execution-id)
@@ -19,7 +20,11 @@
   (swap! *log*
          (fn [log]
            (let [log (conj (vec log) v)]
-             (if (-> log count (> *log-max-size*))
+             (if (clojure.core/-> log count (> *log-max-size*))
                (rest log)
                log))))
   v)
+
+(defmacro -> [& forms]
+  (let [forms' (interleave forms (repeat `tap))]
+    `(clojure.core/-> ~@forms')))
