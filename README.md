@@ -7,6 +7,5 @@ return valus and exceptions, we _grab_ to look at later and better _grasp_ what'
 
 # TODO
 
-[ ] Capture form and var on new tap based namespace like we did previously.
-
-[ ] Use a tool to help do deploys based on deps.edn info instead of pom.xml.
+- [ ] Capture form and var on new tap based namespace like we did previously.
+- [ ] Use a tool to help do deploys based on deps.edn info instead of pom.xml.
