@@ -1,3 +1,5 @@
+[![Clojars Project](https://img.shields.io/clojars/v/edenferreira/grasp.svg)](https://clojars.org/edenferreira/grasp)
+
 # Grasp
 
 _Grasp_ is a small lib to help you to debug clojure code.
