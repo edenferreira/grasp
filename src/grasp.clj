@@ -1,9 +1,7 @@
 (ns grasp
-  (:refer-clojure :exclude [-> ->>]))
-
-(defonce ^:dynamic *log* (atom []))
-(def ^:dynamic *execution-id* :execution-id)
-(def ^:dynamic *log-max-size* 1000)
+  (:refer-clojure :exclude [-> ->>])
+  (:require [clojure.pprint :as pprint])
+  (:import [clojure.lang IObj]))
 
 (defn search-for-var [p]
   (if (var? p)
@@ -15,20 +13,46 @@
                       first
                       second)))
 
-(defn tap [v]
-  (tap> v)
-  (swap! *log*
-         (fn [log]
-           (let [log (conj (vec log) v)]
-             (if (clojure.core/-> log count (> *log-max-size*))
-               (rest log)
-               log))))
+(defn grab* [v]
+  (tap> (if (instance? IObj v)
+          (with-meta v
+                     (merge (meta v)
+                            {::grasped? true}))
+          v))
   v)
 
+(defmacro grab [exp]
+  `(try
+     (grab* ~exp)
+     (catch Exception e#
+       (grab* e#)
+       (throw e#))))
+
+(defn add-pretty-print-sink! []
+  (add-tap pprint/pprint))
+
+(defn remove-pretty-print-sink! []
+  (remove-tap pprint/pprint))
+
+(defn ^:private rebl-sink [v]
+  ((requiring-resolve `cognitect.rebl/submit)
+   '(submited by grasp)
+   v))
+
+(defn add-rebl-sink!
+  "you probably don't need this because rebl already
+   capture taps, but if you want to navigate faster through
+   them, this can help"
+  []
+  (add-tap rebl-sink))
+
+(defn remove-rebl-sink! []
+  (remove-tap rebl-sink))
+
 (defmacro -> [& forms]
-  (let [forms' (interleave forms (repeat `tap))]
+  (let [forms' (interleave forms (repeat `grab))]
     `(clojure.core/-> ~@forms')))
 
 (defmacro ->> [& forms]
-  (let [forms' (interleave forms (repeat `tap))]
+  (let [forms' (interleave forms (repeat `grab))]
     `(clojure.core/->> ~@forms')))

@@ -7,4 +7,5 @@ return valus and exceptions, we _grab_ to look at later and better _grasp_ what'
 
 # TODO
 
-[ ] make execution-id and log, when passed as parameter, still be optional.
+[ ] Capture form and var on new tap based namespace like we did previously.
+[ ] Use a tool to help do deploys based on deps.edn info instead of pom.xml.

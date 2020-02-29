@@ -1,29 +1,60 @@
 (ns grasp-test
   (:require [clojure.test :refer [deftest is testing]]
-            [grasp]))
+            [matcher-combinators.test :refer [match? thrown-match?]]
+            [clojure.pprint :as pprint]
+            [grasp])
+  (:import (clojure.lang ExceptionInfo)))
+
+(defmacro capturing-tap [binding-vec & forms]
+  (let [binding# (first binding-vec)]
+    `(let [captured-tap# (atom [])]
+       (with-redefs
+         [tap>
+          (fn ~['a]
+            (swap! captured-tap# conj ~(quote a))
+            true)]
+         (let [~binding# captured-tap#]
+           ~@forms)))))
 
 (deftest tap
-  (binding [grasp/*log-max-size* 10
-            grasp/*log* (atom [])]
-    (is (= {:a :value}
-           (grasp/tap {:a :value})))
-    (is (= [{:a :value}]
-           @grasp/*log*)))
+  (capturing-tap [tapped]
+    (is (= {:a 1} (grasp/grab {:a 1})))
+    (is (= [{:a 1}] @tapped))
+    (is (match? {:grasp/grasped? true}
+                (meta (last @tapped)))))
 
-  (binding [grasp/*log-max-size* 10
-            grasp/*log* (atom (range 10))]
-    (grasp/tap {:a :value})
-    (is (= 10
-           (count @grasp/*log*)))))
+  (capturing-tap [tapped]
+    (is (= 1 (grasp/grab 1)))
+    (is (= [1] @tapped))
+    (testing "numbers can't have meta, so we just don't have it"
+      (is (= nil
+             (meta (last @tapped))))))
+
+  (capturing-tap [tapped]
+    (grasp/grab (with-meta {:a :b}
+                           {:meta :here}))
+    (testing "we keep whatever meta we had before"
+      (is (match? {:grasp/grasped? true
+                   :meta :here}
+                  (meta (last @tapped))))))
+
+  (capturing-tap [tapped]
+    (let [ex (ex-info "Oh Noes"
+                      {:what 'happened})]
+      (is (thrown-match?
+            ExceptionInfo
+            {:what 'happened}
+            (grasp/grab (throw ex))))
+      (is (= [ex] @tapped)))))
 
 (deftest thread->
-  (binding [grasp/*log* (atom [])]
+  (capturing-tap [tapped]
     (is (= 5 (grasp/-> 1 inc inc inc inc)))
     (is (= [1 2 3 4 5]
-           @grasp/*log*))))
+           @tapped))))
 
 (deftest thread->>
-  (binding [grasp/*log* (atom [])]
+  (capturing-tap [tapped]
     (is (= 4 (grasp/->> 2 (- 3) (- 5))))
     (is (= [2 1 4]
-           @grasp/*log*))))
+           @tapped))))
