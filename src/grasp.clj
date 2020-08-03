@@ -47,6 +47,18 @@
               ~(local-bindings &env))
        (throw e#))))
 
+;; Replacements
+
+(defmacro -> [& forms]
+  (let [forms' (interleave forms (repeat `grab))]
+    `(clojure.core/-> ~@forms')))
+
+(defmacro ->> [& forms]
+  (let [forms' (interleave forms (repeat `grab))]
+    `(clojure.core/->> ~@forms')))
+
+;; Sinks
+
 (defn add-pretty-print-sink! []
   (add-tap pprint/pprint))
 
@@ -67,11 +79,3 @@
 
 (defn remove-rebl-sink! []
   (remove-tap rebl-sink))
-
-(defmacro -> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
-    `(clojure.core/-> ~@forms')))
-
-(defmacro ->> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
-    `(clojure.core/->> ~@forms')))
