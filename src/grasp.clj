@@ -3,7 +3,14 @@
   (:require [clojure.pprint :as pprint])
   (:import [clojure.lang IObj]))
 
-(defn search-for-var [p]
+(defn search-for-var
+  "If the parameter is a value it looks for the var
+   that contains this value. For rich objects, like maps
+   vectors and the like it is precise, but for primitives
+   like numbers it will find the first var that contains that
+   number, but maybe will not find the one you were actually
+   looking for"
+  [p]
   (if (var? p)
     p
     (clojure.core/->> (all-ns)
@@ -34,7 +41,16 @@
   (reduce (fn [m sym] (assoc m `'~sym sym))
 	  {} (keys env)))
 
-(defmacro grab [exp]
+(defmacro grab
+  "It grabs the value of the expression parameter.
+   It also grabs local bindings, stacktrace and the original form
+   and adds to the metadata of the value if accepts metadata, so
+   primitives like numbers for example won't have this feature.
+
+   This can introduce a memory leak depending on the sink you are
+   using, for example if it is a atom, so keep this in mind and regularly
+   purge it if you have a long running repl and is grabbing a lot of value."
+  [exp]
   `(try
      (grab* ~exp
             '~&form
