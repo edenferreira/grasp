@@ -13,13 +13,15 @@
                       first
                       second)))
 
-(defn grab* [v original-form locals]
+(defn grab* [v original-form exception locals]
   (tap> (if (instance? IObj v)
           (with-meta v
                      (merge (meta v)
                             {::grasped? true
                              ::original-form original-form
-                             ::locals locals}))
+                             ::locals locals
+                             ::stacktrace (mapv StackTraceElement->vec
+                                                (.getStackTrace exception))}))
           v))
   v)
 
@@ -34,10 +36,14 @@
 
 (defmacro grab [exp]
   `(try
-     (grab* ~exp '~&form
+     (grab* ~exp
+            '~&form
+            (ex-info "just" {:want [:the :line]})
             ~(local-bindings &env))
      (catch Exception e#
-       (grab* e# '~&form
+       (grab* e#
+              '~&form
+              (ex-info "just" {:want [:the :line]})
               ~(local-bindings &env))
        (throw e#))))
 

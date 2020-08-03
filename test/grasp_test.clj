@@ -1,6 +1,7 @@
 (ns grasp-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test :refer [match? thrown-match?]]
+            [matcher-combinators.matchers :as m]
             [grasp])
   (:import (clojure.lang ExceptionInfo)))
 
@@ -22,7 +23,8 @@
       (is (= [{:a 1}] @tapped))
       (is (match? {:grasp/grasped? true
                    :grasp/original-form '(grasp/grab {:a a})
-                   :grasp/locals {'a 1}}
+                   :grasp/locals {'a 1}
+                   :grasp/stacktrace (m/pred (partial every? vector))}
                   (meta (last @tapped))))))
 
   (capturing-tap [tapped]
