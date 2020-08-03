@@ -1,5 +1,5 @@
 (ns grasp
-  (:refer-clojure :exclude [-> ->>])
+  (:refer-clojure :exclude [-> ->> let])
   (:require [clojure.pprint :as pprint])
   (:import [clojure.lang IObj]))
 
@@ -50,12 +50,22 @@
 ;; Replacements
 
 (defmacro -> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
+  (clojure.core/let [forms' (interleave forms (repeat `grab))]
     `(clojure.core/-> ~@forms')))
 
 (defmacro ->> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
+  (clojure.core/let [forms' (interleave forms (repeat `grab))]
     `(clojure.core/->> ~@forms')))
+
+(defn emit-let-bindings [bindings]
+  (vec
+   (mapcat (fn [[b e]]
+             [b (list `grab e)])
+           (partition 2 bindings))))
+
+(defmacro let [bindings & body]
+  `(clojure.core/let ~(emit-let-bindings bindings)
+     ~@body))
 
 ;; Sinks
 

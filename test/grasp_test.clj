@@ -63,5 +63,14 @@
     (is (= [2 1 4]
            @tapped))))
 
+(deftest let-macro
+  (capturing-tap [tapped]
+    (is (= 5
+        (grasp/let [a 1
+                    b 3]
+          (+ 1 a b))))
+    (is (= [1 3]
+           @tapped))))
+
 (comment
   ((requiring-resolve `kaocha.repl/run) 'grasp-test))
