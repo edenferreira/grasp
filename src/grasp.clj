@@ -13,19 +13,20 @@
                       first
                       second)))
 
-(defn grab* [v]
+(defn grab* [v original-form]
   (tap> (if (instance? IObj v)
           (with-meta v
                      (merge (meta v)
-                            {::grasped? true}))
+                            {::grasped? true
+                             ::original-form original-form}))
           v))
   v)
 
 (defmacro grab [exp]
   `(try
-     (grab* ~exp)
+     (grab* ~exp '~&form)
      (catch Exception e#
-       (grab* e#)
+       (grab* e# '~&form)
        (throw e#))))
 
 (defn add-pretty-print-sink! []

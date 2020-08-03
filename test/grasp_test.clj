@@ -1,7 +1,6 @@
 (ns grasp-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test :refer [match? thrown-match?]]
-            [clojure.pprint :as pprint]
             [grasp])
   (:import (clojure.lang ExceptionInfo)))
 
@@ -17,11 +16,13 @@
            ~@forms)))))
 
 (deftest tap
-  (capturing-tap [tapped]
-    (is (= {:a 1} (grasp/grab {:a 1})))
-    (is (= [{:a 1}] @tapped))
-    (is (match? {:grasp/grasped? true}
-                (meta (last @tapped)))))
+  (let [a 1]
+    (capturing-tap [tapped]
+      (is (= {:a 1} (grasp/grab {:a a})))
+      (is (= [{:a 1}] @tapped))
+      (is (match? {:grasp/grasped? true
+                   :grasp/original-form '(grasp/grab {:a a})}
+                  (meta (last @tapped))))))
 
   (capturing-tap [tapped]
     (is (= 1 (grasp/grab 1)))
@@ -58,3 +59,6 @@
     (is (= 4 (grasp/->> 2 (- 3) (- 5))))
     (is (= [2 1 4]
            @tapped))))
+
+(comment
+  ((requiring-resolve `kaocha.repl/run) 'grasp-test))
