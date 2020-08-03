@@ -2,9 +2,9 @@
  {org.clojure/clojure {:mvn/version "1.10.1"}}
  :aliases
  {:dev
-  {:extra-deps {lambdaisland/kaocha {:mvn/version "0.0-554"}
-                nubank/matcher-combinators {:mvn/version "1.2.4"}}}
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
+                nubank/matcher-combinators {:mvn/version "3.1.1"}}}
 
   :test
-  {:extra-deps {lambdaisland/kaocha {:mvn/version "0.0-554"}
-                nubank/matcher-combinators {:mvn/version "1.2.4"}}}}}
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
+                nubank/matcher-combinators {:mvn/version "3.1.1"}}}}}

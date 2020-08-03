@@ -1,9 +1,16 @@
 (ns grasp
-  (:refer-clojure :exclude [-> ->>])
+  (:refer-clojure :exclude [-> ->> let])
   (:require [clojure.pprint :as pprint])
   (:import [clojure.lang IObj]))
 
-(defn search-for-var [p]
+(defn search-for-var
+  "If the parameter is a value it looks for the var
+   that contains this value. For rich objects, like maps
+   vectors and the like it is precise, but for primitives
+   like numbers it will find the first var that contains that
+   number, but maybe will not find the one you were actually
+   looking for"
+  [p]
   (if (var? p)
     p
     (clojure.core/->> (all-ns)
@@ -13,20 +20,70 @@
                       first
                       second)))
 
-(defn grab* [v]
+(defn grab* [v original-form exception locals]
   (tap> (if (instance? IObj v)
           (with-meta v
                      (merge (meta v)
-                            {::grasped? true}))
+                            {::grasped? true
+                             ::original-form original-form
+                             ::locals locals
+                             ::stacktrace (mapv StackTraceElement->vec
+                                                (.getStackTrace exception))}))
           v))
   v)
 
-(defmacro grab [exp]
+;; shameslessly copied
+;; https://github.com/stuartsierra/lazytest/blob/master/modules/lazytest/src/main/clojure/lazytest/expect.clj#L4-L8
+;; what should I do EPL 1.0?
+(defn- local-bindings
+  "Returns a map of the names of local bindings to their values."
+  [env]
+  (reduce (fn [m sym] (assoc m `'~sym sym))
+	  {} (keys env)))
+
+(defmacro grab
+  "It grabs the value of the expression parameter.
+   It also grabs local bindings, stacktrace and the original form
+   and adds to the metadata of the value if accepts metadata, so
+   primitives like numbers for example won't have this feature.
+
+   This can introduce a memory leak depending on the sink you are
+   using, for example if it is a atom, so keep this in mind and regularly
+   purge it if you have a long running repl and is grabbing a lot of value."
+  [exp]
   `(try
-     (grab* ~exp)
+     (grab* ~exp
+            '~&form
+            (ex-info "just" {:want [:the :line]})
+            ~(local-bindings &env))
      (catch Exception e#
-       (grab* e#)
+       (grab* e#
+              '~&form
+              (ex-info "just" {:want [:the :line]})
+              ~(local-bindings &env))
        (throw e#))))
+
+;; Replacements
+
+(defmacro -> [& forms]
+  (clojure.core/let [forms' (interleave forms (repeat `grab))]
+    `(clojure.core/-> ~@forms')))
+
+(defmacro ->> [& forms]
+  (clojure.core/let [forms' (interleave forms (repeat `grab))]
+    `(clojure.core/->> ~@forms')))
+
+(defn emit-let-bindings [bindings]
+  (vec
+   (mapcat (fn [[b e]]
+             [b (list `grab e)])
+           (partition 2 bindings))))
+
+(defmacro let [bindings & body]
+  `(clojure.core/let ~(emit-let-bindings bindings)
+     ~@body))
+
+;; Sinks
 
 (defn add-pretty-print-sink! []
   (add-tap pprint/pprint))
@@ -48,11 +105,3 @@
 
 (defn remove-rebl-sink! []
   (remove-tap rebl-sink))
-
-(defmacro -> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
-    `(clojure.core/-> ~@forms')))
-
-(defmacro ->> [& forms]
-  (let [forms' (interleave forms (repeat `grab))]
-    `(clojure.core/->> ~@forms')))
