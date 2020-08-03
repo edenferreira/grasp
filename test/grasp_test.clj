@@ -21,7 +21,8 @@
       (is (= {:a 1} (grasp/grab {:a a})))
       (is (= [{:a 1}] @tapped))
       (is (match? {:grasp/grasped? true
-                   :grasp/original-form '(grasp/grab {:a a})}
+                   :grasp/original-form '(grasp/grab {:a a})
+                   :grasp/locals {'a 1}}
                   (meta (last @tapped))))))
 
   (capturing-tap [tapped]

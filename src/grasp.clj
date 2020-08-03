@@ -13,20 +13,32 @@
                       first
                       second)))
 
-(defn grab* [v original-form]
+(defn grab* [v original-form locals]
   (tap> (if (instance? IObj v)
           (with-meta v
                      (merge (meta v)
                             {::grasped? true
-                             ::original-form original-form}))
+                             ::original-form original-form
+                             ::locals locals}))
           v))
   v)
 
+;; shameslessly copied
+;; https://github.com/stuartsierra/lazytest/blob/master/modules/lazytest/src/main/clojure/lazytest/expect.clj#L4-L8
+;; what should I do EPL 1.0?
+(defn- local-bindings
+  "Returns a map of the names of local bindings to their values."
+  [env]
+  (reduce (fn [m sym] (assoc m `'~sym sym))
+	  {} (keys env)))
+
 (defmacro grab [exp]
   `(try
-     (grab* ~exp '~&form)
+     (grab* ~exp '~&form
+            ~(local-bindings &env))
      (catch Exception e#
-       (grab* e# '~&form)
+       (grab* e# '~&form
+              ~(local-bindings &env))
        (throw e#))))
 
 (defn add-pretty-print-sink! []
