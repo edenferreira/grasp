@@ -72,5 +72,24 @@
     (is (= [1 3]
            @tapped))))
 
+;; Sinks
+
+(deftest form+value-sink
+  (letfn [(f [result form value]
+            (swap! result conj [form value]))]
+    (let [result (atom nil)
+          value (with-meta {:a 6}
+                  {:grasp/grasped? true
+                   :grasp/original-form {:a '(+ 2 3)}})]
+      (grasp/form+value-sink (partial f result) value)
+      (is (= [[{:a '(+ 2 3)} value]]
+             @result)))
+
+    (let [result (atom nil)
+          value 5]
+      (grasp/form+value-sink (partial f result) value)
+      (is (= [[value value]]
+             @result)))))
+
 (comment
-  ((requiring-resolve `kaocha.repl/run) 'grasp-test))
+  ((requiring-resolve `kaocha.repl/run) *ns*))

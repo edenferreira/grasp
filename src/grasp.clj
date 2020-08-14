@@ -85,23 +85,14 @@
 
 ;; Sinks
 
-(defn add-pretty-print-sink! []
-  (add-tap pprint/pprint))
+(def pprint-sink! pprint/pprint)
 
-(defn remove-pretty-print-sink! []
-  (remove-tap pprint/pprint))
+(defn form+value-sink [f v]
+  (if (::grasped? (meta v))
+    (f (::original-form (meta v)) v)
+    (f v v)))
 
-(defn ^:private rebl-sink [v]
-  ((requiring-resolve `cognitect.rebl/submit)
-   '(submited by grasp)
+(defn rebl-sink! [v]
+  (form+value-sink
+   (requiring-resolve `cognitect.rebl/submit)
    v))
-
-(defn add-rebl-sink!
-  "you probably don't need this because rebl already
-   capture taps, but if you want to navigate faster through
-   them, this can help"
-  []
-  (add-tap rebl-sink))
-
-(defn remove-rebl-sink! []
-  (remove-tap rebl-sink))
