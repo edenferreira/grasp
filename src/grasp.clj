@@ -20,15 +20,35 @@
                       first
                       second)))
 
+(def ^:private mapper (atom (fn [m v] m)))
+
+(defn set-mapper!
+  "Receives a fn that will be passed the grab metadata and the value
+   itself and should return a new metadata for the grab.
+   The only meta that will be added by this lib regardless is the attribute
+   ':grasp/grasped?'.
+   The mapper fn can be removed with the `unset-mapper!` fn."
+  [f]
+  (reset! mapper f)
+  nil)
+
+(defn unset-mapper!
+  "Remove any mapper added with `set-mapper!`"
+  []
+  (reset! mapper (fn [m v] m))
+  nil)
+
 (defn grab* [v original-form exception locals]
   (tap> (if (instance? IObj v)
           (with-meta v
                      (merge (meta v)
-                            {::grasped? true
-                             ::original-form original-form
-                             ::locals locals
-                             ::stacktrace (mapv StackTraceElement->vec
-                                                (.getStackTrace exception))}))
+                            (assoc
+                             (@mapper {::original-form original-form
+                                       ::locals locals
+                                       ::stacktrace (mapv StackTraceElement->vec
+                                                          (.getStackTrace exception))}
+                              v)
+                             ::grasped? true)))
           v))
   v)
 

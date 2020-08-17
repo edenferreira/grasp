@@ -51,6 +51,31 @@
             (grasp/grab (throw ex))))
       (is (= [ex] @tapped)))))
 
+(deftest tap-with-mapper
+  (let [a {:b :c}]
+    (grasp/set-mapper! (fn [m v]
+                         (assoc m ::value v)))
+    (capturing-tap [tapped]
+      (is (= {:a {:b :c}} (grasp/grab {:a a})))
+      (is (match? {::value {:a a}}
+                  (meta (last @tapped)))))
+    (grasp/unset-mapper!)
+    (capturing-tap [tapped]
+      (is (= {:a {:b :c}} (grasp/grab {:a a})))
+      (is (match? {::value m/absent}
+                  (meta (last @tapped))))))
+
+  (testing "we can't remove grasped? from the metadata"
+    (let [a {:b :c}]
+      (grasp/set-mapper! (fn [m v]
+                           (dissoc m :grasp/grasped?)))
+      (capturing-tap [tapped]
+        (grasp/grab {:a a})
+        (is (match? {:grasp/grasped? true}
+                    (meta (last @tapped)))))
+      ;; to not tarnish the other tests
+      (grasp/unset-mapper!))))
+
 (deftest thread->
   (capturing-tap [tapped]
     (is (= 5 (grasp/-> 1 inc inc inc inc)))
