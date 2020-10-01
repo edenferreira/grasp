@@ -103,7 +103,7 @@
 (grasp/defn triple "triple" [c]
   (* c 3))
 
-(grasp/defn concatenate {:unnecessary :complicated} [a b c]
+(grasp/defn concatenate-from-map {:unnecessary :complicated} [{:keys [a b c]}]
   (println a b c)
   (concat a b c))
 
@@ -117,8 +117,16 @@
     (is (= [[7] 21] @tapped)))
 
   (capturing-tap [tapped]
-    (is (= [1 5 8] (concatenate [1] [5] [8])))
-    (is (= [[[1] [5] [8]] [1 5 8]] @tapped))))
+    (let [a 1
+          b 5
+          c 8]
+      (is (= [1 5 8] (concatenate-from-map {:a [a]
+                                            :b [b]
+                                            :c [c]})))
+      (is (= [[{:a [1]
+                :b [5]
+                :c [8]}]
+              [1 5 8]] @tapped)))))
 
 ;; Sinks
 

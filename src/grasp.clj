@@ -111,10 +111,14 @@
         forms-wo-meta (if (map? (first forms-wo-docstring))
                         (rest forms-wo-docstring)
                         forms-wo-docstring)
-        [parameters & body] forms-wo-meta]
-    `(clojure.core/defn ~name ~parameters
-       (grab ~parameters)
-       (grab (do  ~@body)))))
+        [parameters & body] forms-wo-meta
+        new-parameters (->> (range (count parameters))
+                            (mapv (comp gensym
+                                        (partial str "arg"))))]
+    `(clojure.core/defn ~name ~new-parameters
+       (grab ~new-parameters)
+       (clojure.core/let [~parameters ~new-parameters]
+         (grab (do ~@body))))))
 
 ;; Sinks
 
