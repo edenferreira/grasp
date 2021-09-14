@@ -1,9 +1,9 @@
 (ns grasp
-  (:refer-clojure :exclude [-> ->> let])
+  (:refer-clojure :exclude [-> ->> let defn])
   (:require [clojure.pprint :as pprint])
   (:import [clojure.lang IObj]))
 
-(defn search-for-var
+(clojure.core/defn search-for-var
   "If the parameter is a value it looks for the var
    that contains this value. For rich objects, like maps
    vectors and the like it is precise, but for primitives
@@ -22,7 +22,7 @@
 
 (def ^:private mapper (atom (fn [m v] m)))
 
-(defn set-mapper!
+(clojure.core/defn set-mapper!
   "Receives a fn that will be passed the grab metadata and the value
    itself and should return a new metadata for the grab.
    The only meta that will be added by this lib regardless is the attribute
@@ -32,34 +32,34 @@
   (reset! mapper f)
   nil)
 
-(defn unset-mapper!
+(clojure.core/defn unset-mapper!
   "Remove any mapper added with `set-mapper!`"
   []
   (reset! mapper (fn [m v] m))
   nil)
 
-(defn grab* [v original-form exception locals]
+(clojure.core/defn grab* [v original-form exception locals]
   (tap> (if (instance? IObj v)
           (with-meta v
-                     (merge (meta v)
-                            (assoc
-                             (@mapper {::original-form original-form
-                                       ::locals locals
-                                       ::stacktrace (mapv StackTraceElement->vec
-                                                          (.getStackTrace exception))}
-                              v)
-                             ::grasped? true)))
+            (merge (meta v)
+                   (assoc
+                    (@mapper {::original-form original-form
+                              ::locals locals
+                              ::stacktrace (mapv StackTraceElement->vec
+                                                 (.getStackTrace exception))}
+                     v)
+                    ::grasped? true)))
           v))
   v)
 
 ;; shameslessly copied
 ;; https://github.com/stuartsierra/lazytest/blob/master/modules/lazytest/src/main/clojure/lazytest/expect.clj#L4-L8
 ;; what should I do EPL 1.0?
-(defn- local-bindings
+(clojure.core/defn- local-bindings
   "Returns a map of the names of local bindings to their values."
   [env]
   (reduce (fn [m sym] (assoc m `'~sym sym))
-	  {} (keys env)))
+          {} (keys env)))
 
 (defmacro grab
   "It grabs the value of the expression parameter.
@@ -93,7 +93,7 @@
   (clojure.core/let [forms' (interleave forms (repeat `grab))]
     `(clojure.core/->> ~@forms')))
 
-(defn emit-let-bindings [bindings]
+(clojure.core/defn emit-let-bindings [bindings]
   (vec
    (mapcat (fn [[b e]]
              [b (list `grab e)])
@@ -103,16 +103,33 @@
   `(clojure.core/let ~(emit-let-bindings bindings)
      ~@body))
 
+(defmacro defn [& forms]
+  (let [[name & forms] forms
+        forms-wo-docstring (if (string? (first forms))
+                             (rest forms)
+                             forms)
+        forms-wo-meta (if (map? (first forms-wo-docstring))
+                        (rest forms-wo-docstring)
+                        forms-wo-docstring)
+        [parameters & body] forms-wo-meta
+        new-parameters (->> (range (count parameters))
+                            (mapv (comp gensym
+                                        (partial str "arg"))))]
+    `(clojure.core/defn ~name ~new-parameters
+       (grab ~new-parameters)
+       (clojure.core/let [~parameters ~new-parameters]
+         (grab (do ~@body))))))
+
 ;; Sinks
 
 (def pprint-sink! pprint/pprint)
 
-(defn form+value-sink [f v]
+(clojure.core/defn form+value-sink [f v]
   (if (::grasped? (meta v))
     (f (::original-form (meta v)) v)
     (f v v)))
 
-(defn rebl-sink! [v]
+(clojure.core/defn rebl-sink! [v]
   (form+value-sink
    (requiring-resolve `cognitect.rebl/submit)
    v))

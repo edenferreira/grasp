@@ -97,6 +97,37 @@
     (is (= [1 3]
            @tapped))))
 
+(grasp/defn add [a b]
+  (+ a b))
+
+(grasp/defn triple "triple" [c]
+  (* c 3))
+
+(grasp/defn concatenate-from-map {:unnecessary :complicated} [{:keys [a b c]}]
+  (println a b c)
+  (concat a b c))
+
+(deftest defn-macro
+  (capturing-tap [tapped]
+    (is (= 42 (add 19 23)))
+    (is (= [[19 23] 42] @tapped)))
+
+  (capturing-tap [tapped]
+    (is (= 21 (triple 7)))
+    (is (= [[7] 21] @tapped)))
+
+  (capturing-tap [tapped]
+    (let [a 1
+          b 5
+          c 8]
+      (is (= [1 5 8] (concatenate-from-map {:a [a]
+                                            :b [b]
+                                            :c [c]})))
+      (is (= [[{:a [1]
+                :b [5]
+                :c [8]}]
+              [1 5 8]] @tapped)))))
+
 ;; Sinks
 
 (deftest form+value-sink
