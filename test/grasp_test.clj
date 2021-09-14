@@ -116,5 +116,10 @@
       (is (= [[value value]]
              @result)))))
 
+(deftest persistent-sink!
+  (grasp/persistent-sink! ::some-value)
+  (is (= [::some-value]
+         @grasp/log)))
+
 (comment
   ((requiring-resolve `kaocha.repl/run) *ns*))

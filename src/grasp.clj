@@ -116,3 +116,8 @@
   (form+value-sink
    (requiring-resolve `cognitect.rebl/submit)
    v))
+
+(def log (atom []))
+
+(defn persistent-sink! [v]
+  (swap! log conj v))
