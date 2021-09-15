@@ -116,5 +116,19 @@
       (is (= [[value value]]
              @result)))))
 
+(deftest persistent-sink!
+  (testing "we persist a simple value in the log"
+    (reset! grasp/log [])
+    (grasp/persistent-sink! ::some-value)
+    (is (= [::some-value]
+           @grasp/log)))
+
+  (testing "the metadata is also persisted"
+    (reset! grasp/log [])
+    (grasp/persistent-sink! (with-meta {::some ::value}
+                              {::my ::meta}))
+    (is (= [{::my ::meta}]
+           (map meta @grasp/log)))))
+
 (comment
   ((requiring-resolve `kaocha.repl/run) *ns*))
