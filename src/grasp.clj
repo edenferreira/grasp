@@ -117,7 +117,7 @@
    (requiring-resolve `cognitect.rebl/submit)
    v))
 
-(def log (atom []))
-
+(def log-initial-value [])
+(def log (atom log-initial-value))
 (defn persistent-sink! [v]
   (swap! log conj v))
