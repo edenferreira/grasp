@@ -118,5 +118,10 @@
    v))
 
 (def log (atom []))
-(defn persistent-sink! [v]
+(defn persistent-sink!
+  "It appends the value to the grasp/log atom.
+   It is a sequence, so to get the last value you can just
+  (last @grasp/log) and to reset the value you can
+  (swap! grasp/log empty)."
+  [v]
   (swap! log conj v))
