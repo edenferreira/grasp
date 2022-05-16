@@ -1,1 +1,3 @@
-mvn deploy
+clj -X:jar
+clj -X:deploy
+#mvn deploy

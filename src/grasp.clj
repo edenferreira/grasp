@@ -103,6 +103,8 @@
   `(clojure.core/let ~(emit-let-bindings bindings)
      ~@body))
 
+;; TODO comp version
+
 ;; Sinks
 
 (def pprint-sink! pprint/pprint)
@@ -125,3 +127,6 @@
   (swap! grasp/log empty)."
   [v]
   (swap! log conj v))
+
+;; TODO Changelog keepchangelog
+;; TODO g/cond
